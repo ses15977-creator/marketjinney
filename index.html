@@ -1,1 +1,108 @@
 
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마켓 지니 - 자체 개발 쇼핑몰</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        h2 { margin: 0; color: #333; }
+        .cart-box {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ff4757;
+            background: #fff0f1;
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .card h3 { margin: 10px 0 5px; color: #222; }
+        .card p { color: #666; font-size: 14px; margin-bottom: 15px; }
+        .price { font-weight: bold; color: #007bff; font-size: 16px; margin-bottom: 15px; display: block; }
+        button {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        button:hover { background: #ff6b81; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h2>🎁 마켓 지니 스토어</h2>
+        <div class="cart-box">🛒 장바구니: <span id="cartCount">0</span>개</div>
+    </header>
+
+    <div class="products">
+        <div class="card">
+            <h3>건강한끼 런치박스</h3>
+            <p>신선하고 균형 잡힌 다이어트 식단</p>
+            <span class="price">12,900원</span>
+            <button onclick="addToCart('건강한끼 런치박스')">장바구니 담기</button>
+        </div>
+        <div class="card">
+            <h3>듀록 삼겹살 500g</h3>
+            <p>육즙이 살아있는 프리미엄 삼겹살</p>
+            <span class="price">15,000원</span>
+            <button onclick="addToCart('듀록 삼겹살 500g')">장바구니 담기</button>
+        </div>
+        <div class="card">
+            <h3>부산 어묵바 세트</h3>
+            <p>탱글탱글 쫄깃한 수제 어묵바</p>
+            <span class="price">9,900원</span>
+            <button onclick="addToCart('부산 어묵바 세트')">장바구니 담기</button>
+        </div>
+    </div>
+
+    <script>
+        let cart = JSON.parse(localStorage.getItem('myCart')) || [];
+        updateCartCount();
+
+        function addToCart(productName) {
+            cart.push(productName);
+            localStorage.setItem('myCart', JSON.stringify(cart));
+            updateCartCount();
+            alert(`[${productName}]이(가) 장바구니에 담겼습니다!`);
+        }
+
+        function updateCartCount() {
+            document.getElementById('cartCount').textContent = cart.length;
+        }
+    </script>
+
+</body>
+</html>
