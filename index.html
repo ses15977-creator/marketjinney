@@ -1,108 +1,175 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>마켓 지니 - 자체 개발 쇼핑몰</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>모바일 숫자 퍼즐 게임</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-            margin: 0;
-            padding: 20px;
-        }
-        header {
+            background-color: #f0f2f5;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            background: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            touch-action: manipulation;
         }
-        h2 { margin: 0; color: #333; }
-        .cart-box {
-            font-size: 16px;
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        #message {
+            font-size: 15px;
             font-weight: bold;
-            color: #ff4757;
-            background: #fff0f1;
-            padding: 8px 15px;
-            border-radius: 20px;
-        }
-        .products {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 20px;
-        }
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            color: #007bff;
+            height: 25px;
+            margin-bottom: 10px;
             text-align: center;
+            padding: 0 10px;
         }
-        .card h3 { margin: 10px 0 5px; color: #222; }
-        .card p { color: #666; font-size: 14px; margin-bottom: 15px; }
-        .price { font-weight: bold; color: #007bff; font-size: 16px; margin-bottom: 15px; display: block; }
-        button {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 10px 20px;
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 75px);
+            grid-template-rows: repeat(4, 75px);
+            gap: 5px;
+            background-color: #bbada0;
+            padding: 8px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .tile {
+            background-color: #eee4da;
+            font-size: 22px;
+            font-weight: bold;
+            color: #776e65;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             border-radius: 6px;
             cursor: pointer;
-            font-weight: bold;
-            width: 100%;
-            transition: background 0.2s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        button:hover { background: #ff6b81; }
+
+        .tile.empty {
+            background-color: #cdc1b4;
+            cursor: default;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #8f7a66;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <h2>🎁 마켓 지니 스토어</h2>
-        <div class="cart-box">🛒 장바구니: <span id="cartCount">0</span>개</div>
-    </header>
-
-    <div class="products">
-        <div class="card">
-            <h3>건강한끼 런치박스</h3>
-            <p>신선하고 균형 잡힌 다이어트 식단</p>
-            <span class="price">12,900원</span>
-            <button onclick="addToCart('건강한끼 런치박스')">장바구니 담기</button>
-        </div>
-        <div class="card">
-            <h3>듀록 삼겹살 500g</h3>
-            <p>육즙이 살아있는 프리미엄 삼겹살</p>
-            <span class="price">15,000원</span>
-            <button onclick="addToCart('듀록 삼겹살 500g')">장바구니 담기</button>
-        </div>
-        <div class="card">
-            <h3>부산 어묵바 세트</h3>
-            <p>탱글탱글 쫄깃한 수제 어묵바</p>
-            <span class="price">9,900원</span>
-            <button onclick="addToCart('부산 어묵바 세트')">장바구니 담기</button>
-        </div>
-    </div>
+    <h1>15 숫자 퍼즐</h1>
+    <div id="message">빈 칸 주변의 숫자를 터치하세요!</div>
+    
+    <div class="board" id="puzzleBoard"></div>
+    
+    <button onclick="startGame()">게임 시작 / 섞기</button>
 
     <script>
-        let cart = JSON.parse(localStorage.getItem('myCart')) || [];
-        updateCartCount();
+        const board = document.getElementById('puzzleBoard');
+        const message = document.getElementById('message');
+        let tiles = [];
+        let isWon = false;
 
-        function addToCart(productName) {
-            cart.push(productName);
-            localStorage.setItem('myCart', JSON.stringify(cart));
-            updateCartCount();
-            alert(`[${productName}]이(가) 장바구니에 담겼습니다!`);
+        function startGame() {
+            isWon = false;
+            message.textContent = "숫자를 순서대로(1~15) 맞춰보세요!";
+            
+            tiles = Array.from({ length: 15 }, (_, i) => i + 1);
+            tiles.push(0);
+
+            shuffleValid();
+            renderBoard();
         }
 
-        function updateCartCount() {
-            document.getElementById('cartCount').textContent = cart.length;
+        function shuffleValid() {
+            for (let i = 0; i < 100; i++) {
+                const emptyIdx = tiles.indexOf(0);
+                const validMoves = getValidMoves(emptyIdx);
+                const randomMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+                [tiles[emptyIdx], tiles[randomMove]] = [tiles[randomMove], tiles[emptyIdx]];
+            }
+            if (checkWinCondition()) {
+                shuffleValid();
+            }
         }
+
+        function getValidMoves(emptyIdx) {
+            const row = Math.floor(emptyIdx / 4);
+            const col = emptyIdx % 4;
+            const moves = [];
+
+            if (row > 0) moves.push(emptyIdx - 4);
+            if (row < 3) moves.push(emptyIdx + 4);
+            if (col > 0) moves.push(emptyIdx - 1);
+            if (col < 3) moves.push(emptyIdx + 1);
+
+            return moves;
+        }
+
+        function renderBoard() {
+            board.innerHTML = '';
+            tiles.forEach((number, index) => {
+                const tile = document.createElement('div');
+                tile.classList.add('tile');
+                if (number === 0) {
+                    tile.classList.add('empty');
+                } else {
+                    tile.textContent = number;
+                    tile.addEventListener('click', () => handleTileClick(index));
+                    tile.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        handleTileClick(index);
+                    });
+                }
+                board.appendChild(tile);
+            });
+        }
+
+        function handleTileClick(index) {
+            if (isWon) return;
+
+            const emptyIdx = tiles.indexOf(0);
+            const validMoves = getValidMoves(emptyIdx);
+
+            if (validMoves.includes(index)) {
+                [tiles[emptyIdx], tiles[index]] = [tiles[index], tiles[emptyIdx]];
+                renderBoard();
+
+                if (checkWinCondition()) {
+                    isWon = true;
+                    message.textContent = "🎉 축하합니다! 퍼즐 완성! 🎉";
+                }
+            }
+        }
+
+        function checkWinCondition() {
+            const winningOrder = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0];
+            return tiles.every((val, idx) => val === winningOrder[idx]);
+        }
+
+        startGame();
     </script>
-
 </body>
 </html>
